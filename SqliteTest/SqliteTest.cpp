@@ -3,7 +3,7 @@
 #include <stdio.h>
 using namespace std;
 
-int main()
+int mainTest()
 {
     printf("%s\n", sqlite3_libversion());
 

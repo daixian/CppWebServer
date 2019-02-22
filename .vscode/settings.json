@@ -1,7 +1,6 @@
 {
     "cmake.configureSettings": {
-        "CMAKE_TOOLCHAIN_FILE" : "/home/dx/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        "CMAKE_TOOLCHAIN_FILE" : "D:/SDK/vcpkg/scripts/buildsystems/vcpkg.cmake"
     },
-    "C_Cpp.default.configurationProvider": "vector-of-bool.cmake-tools",
     "cmake.configureOnOpen": true,
 }
