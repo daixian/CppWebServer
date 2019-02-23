@@ -19,8 +19,7 @@ using tcp = boost::asio::ip::tcp;    // from <boost/asio/ip/tcp.hpp>
 namespace http = boost::beast::http; // from <boost/beast/http.hpp>
 
 // Return a reasonable mime type based on the extension of a file.
-boost::beast::string_view
-mime_type(boost::beast::string_view path)
+boost::beast::string_view mime_type(boost::beast::string_view path)
 {
     using boost::beast::iequals;
     auto const ext = [&path] {
@@ -55,10 +54,7 @@ mime_type(boost::beast::string_view path)
 
 // Append an HTTP rel-path to a local filesystem path.
 // The returned path is normalized for the platform.
-std::string
-path_cat(
-    boost::beast::string_view base,
-    boost::beast::string_view path)
+std::string path_cat(boost::beast::string_view base, boost::beast::string_view path)
 {
     if (base.empty())
         return path.to_string();
@@ -84,13 +80,10 @@ path_cat(
 // request. The type of the response object depends on the
 // contents of the request, so the interface requires the
 // caller to pass a generic lambda for receiving the response.
-template <
-    class Body, class Allocator,
-    class Send>
-void handle_request(
-    boost::beast::string_view doc_root,
-    http::request<Body, http::basic_fields<Allocator>>&& req,
-    Send&& send)
+template <class Body, class Allocator, class Send>
+void handle_request(boost::beast::string_view doc_root,
+                    http::request<Body, http::basic_fields<Allocator>>&& req,
+                    Send&& send)
 {
     // Returns a bad request response
     auto const bad_request =
@@ -205,14 +198,12 @@ class session : public std::enable_shared_from_this<session>
         }
 
         template <bool isRequest, class Body, class Fields>
-        void
-        operator()(http::message<isRequest, Body, Fields>&& msg) const
+        void operator()(http::message<isRequest, Body, Fields>&& msg) const
         {
             // The lifetime of the message has to extend
             // for the duration of the async operation so
             // we use a shared_ptr to manage it.
-            auto sp = std::make_shared<
-                http::message<isRequest, Body, Fields>>(std::move(msg));
+            auto sp = std::make_shared<http::message<isRequest, Body, Fields>>(std::move(msg));
 
             // Store a type-erased version of the shared
             // pointer in the class to keep it alive.
@@ -224,19 +215,16 @@ class session : public std::enable_shared_from_this<session>
                 *sp,
                 boost::asio::bind_executor(
                     self_.strand_,
-                    std::bind(
-                        &session::on_write,
-                        self_.shared_from_this(),
-                        std::placeholders::_1,
-                        std::placeholders::_2,
-                        sp->need_eof())));
+                    std::bind(&session::on_write,
+                              self_.shared_from_this(),
+                              std::placeholders::_1,
+                              std::placeholders::_2,
+                              sp->need_eof())));
         }
-    };
+    }; //send_lambda
 
     tcp::socket socket_;
-    boost::asio::strand<
-        boost::asio::io_context::executor_type>
-        strand_;
+    boost::asio::strand<boost::asio::io_context::executor_type> strand_;
     boost::beast::flat_buffer buffer_;
     std::shared_ptr<std::string const> doc_root_;
     http::request<http::string_body> req_;
@@ -245,22 +233,18 @@ class session : public std::enable_shared_from_this<session>
 
   public:
     // Take ownership of the socket
-    explicit session(
-        tcp::socket socket,
-        std::shared_ptr<std::string const> const& doc_root)
+    explicit session(tcp::socket socket, std::shared_ptr<std::string const> const& doc_root)
         : socket_(std::move(socket)), strand_(socket_.get_executor()), doc_root_(doc_root), lambda_(*this)
     {
     }
 
     // Start the asynchronous operation
-    void
-    run()
+    void run()
     {
         do_read();
     }
 
-    void
-    do_read()
+    void do_read()
     {
         // Make the request empty before reading,
         // otherwise the operation behavior is undefined.
@@ -270,17 +254,13 @@ class session : public std::enable_shared_from_this<session>
         http::async_read(socket_, buffer_, req_,
                          boost::asio::bind_executor(
                              strand_,
-                             std::bind(
-                                 &session::on_read,
-                                 shared_from_this(),
-                                 std::placeholders::_1,
-                                 std::placeholders::_2)));
+                             std::bind(&session::on_read,
+                                       shared_from_this(),
+                                       std::placeholders::_1,
+                                       std::placeholders::_2)));
     }
 
-    void
-    on_read(
-        boost::system::error_code ec,
-        std::size_t bytes_transferred)
+    void on_read(boost::system::error_code ec, std::size_t bytes_transferred)
     {
         boost::ignore_unused(bytes_transferred);
 
@@ -295,11 +275,7 @@ class session : public std::enable_shared_from_this<session>
         handle_request(*doc_root_, std::move(req_), lambda_);
     }
 
-    void
-    on_write(
-        boost::system::error_code ec,
-        std::size_t bytes_transferred,
-        bool close)
+    void on_write(boost::system::error_code ec, std::size_t bytes_transferred, bool close)
     {
         boost::ignore_unused(bytes_transferred);
 
@@ -319,8 +295,7 @@ class session : public std::enable_shared_from_this<session>
         do_read();
     }
 
-    void
-    do_close()
+    void do_close()
     {
         // Send a TCP shutdown
         boost::system::error_code ec;
@@ -340,10 +315,9 @@ class listener : public std::enable_shared_from_this<listener>
     std::shared_ptr<std::string const> doc_root_;
 
   public:
-    listener(
-        boost::asio::io_context& ioc,
-        tcp::endpoint endpoint,
-        std::shared_ptr<std::string const> const& doc_root)
+    listener(boost::asio::io_context& ioc,
+             tcp::endpoint endpoint,
+             std::shared_ptr<std::string const> const& doc_root)
         : acceptor_(ioc), socket_(ioc), doc_root_(doc_root)
     {
         boost::system::error_code ec;
@@ -379,16 +353,14 @@ class listener : public std::enable_shared_from_this<listener>
     }
 
     // Start accepting incoming connections
-    void
-    run()
+    void run()
     {
         if (!acceptor_.is_open())
             return;
         do_accept();
     }
 
-    void
-    do_accept()
+    void do_accept()
     {
         acceptor_.async_accept(
             socket_,
@@ -398,8 +370,7 @@ class listener : public std::enable_shared_from_this<listener>
                 std::placeholders::_1));
     }
 
-    void
-    on_accept(boost::system::error_code ec)
+    void on_accept(boost::system::error_code ec)
     {
         if (ec) {
             fail(ec, "accept");

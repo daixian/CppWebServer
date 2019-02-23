@@ -1,11 +1,11 @@
 ﻿{
   "configurations": [
     {
-      "name": "x86-Release",
-      "generator": "Visual Studio 15 2017",
+      "name": "x64-Release",
+      "generator": "Visual Studio 15 2017 Win64",
       "configurationType": "Release",
       "inheritEnvironments": [
-        "msvc_x86"
+        "msvc_x64_x64"
       ],
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
@@ -16,6 +16,10 @@
         {
           "name": "CMAKE_TOOLCHAIN_FILE",
           "value": "D:/SDK/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        },
+        {
+          "name": "VCPKG_TARGET_TRIPLET",
+          "value": "x64-windows-static-md"
         }
       ]
     }
