@@ -3,6 +3,11 @@
 #
 cmake_minimum_required (VERSION 3.0)
 
+if(NOT WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+  set(CMAKE_TOOLCHAIN_FILE "~/vcpkg/scripts/buildsystems/vcpkg.cmake"
+      CACHE STRING "")
+endif()
+
 project ("CppWebServer")
 #add_definitions(-DBOOST_ALL_NO_LIB)
 
