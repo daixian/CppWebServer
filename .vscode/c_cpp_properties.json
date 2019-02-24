@@ -24,3 +24,16 @@
     ],
     "version": 4
 }
+        {
+            "name": "Linux",
+                "${workspaceFolder}/**"
+            "includePath": [
+            "defines": [],
+            ],
+            "compilerPath": "/usr/bin/gcc",
+            "cppStandard": "c++17",
+            "cStandard": "c11",
+            "intelliSenseMode": "clang-x64",
+            "configurationProvider": "vector-of-bool.cmake-tools",
+        }
+            "compileCommands": "${workspaceFolder}/build/compile_commands.json"
